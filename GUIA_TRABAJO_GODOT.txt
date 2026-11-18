@@ -1,0 +1,721 @@
+================================================================================
+   GUIA COMPLETA DE TRABAJO EN GODOT - PARTE VISUAL Y ESCENAS
+   Para compartir con tu companero/a de equipo
+   Proyecto: RTS con scripting Python-like | Godot 4.7
+================================================================================
+
+CONTEXTO PARA TU COMPANERO/A:
+El codigo GDScript ya esta escrito (15 archivos .gd). NO hay que programar nada.
+El trabajo consiste en crear escenas (.tscn), sprites, nodos en el editor de
+Godot y conectar todo. Este documento explica EXACTAMENTE que hacer, click por
+click.
+
+Los scripts buscan nodos hijos por nombre exacto usando @onready. Si el nodo
+no existe o se llama diferente, Godot dara error al ejecutar. Los nombres
+criticos estan marcados con [NOMBRE EXACTO] en cada tarea.
+
+
+================================================================================
+TABLA DE SPRITES NECESARIOS
+================================================================================
+
+Antes de empezar con escenas, necesitan crear o conseguir estos sprites.
+Pueden ser placeholder (cuadrados de colores) al principio y reemplazarlos
+despues. Formato recomendado: PNG 64x64 o 32x32, fondo transparente.
+
+Carpeta sugerida: res://assets/sprites/
+
+  ARCHIVO                 QUE REPRESENTA           COLOR PLACEHOLDER
+  -------                 ---------------          -----------------
+  commander.png           Nave del jugador         Triangulo AZUL
+  collector.png           Nave recolectora         Triangulo VERDE
+  builder.png             Nave constructora        Triangulo AMARILLO
+  enemy.png               Nave enemiga             Triangulo ROJO
+  turret_base.png         Base de torreta          Circulo GRIS
+  turret_gun.png          Canon de torreta         Rectangulo GRIS OSCURO
+  command_center.png      Centro de comando        Hexagono BLANCO grande
+  resource_crystal.png    Cristal de metal         Diamante CIAN
+  bullet.png              Proyectil                Circulo pequeno BLANCO
+  tile_ground.png         Suelo del mapa           Cuadrado MARRON 64x64
+  tile_wall.png           Pared / obstaculo        Cuadrado GRIS OSCURO 64x64
+
+COMO CREAR PLACEHOLDERS RAPIDOS EN GODOT:
+  No necesitan software externo. Para cada sprite pueden:
+  1. Crear un Sprite2D en la escena
+  2. En el Inspector, en Texture: "New GradientTexture2D" o "New PlaceholderTexture2D"
+  3. O usar un Polygon2D en vez de Sprite2D y dibujar un triangulo/circulo
+
+  Alternativa: dibujar en Paint/GIMP un cuadrado de 64x64 de color solido,
+  guardarlo como PNG en res://assets/sprites/.
+
+
+================================================================================
+TAREA 1: CREAR CARPETAS DEL PROYECTO
+================================================================================
+
+Responsable: Cualquiera de los dos (5 minutos)
+
+En el panel FileSystem de Godot (abajo-izquierda), click derecho -> New Folder:
+
+  res://scenes/          <- todas las escenas .tscn van aqui
+  res://assets/          <- recursos visuales
+  res://assets/sprites/  <- los PNG de sprites
+  res://assets/fonts/    <- fuentes (opcional por ahora)
+
+Las carpetas de scripts ya existen (autoload/, units/, structures/, etc.).
+
+
+================================================================================
+TAREA 2: CREAR ESCENA MAIN (la escena raiz del juego)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 15 minutos
+
+PASOS:
+  1. Menu superior: Escena -> Nueva Escena
+  2. En el panel de escena (izquierda), click "Otro Nodo"
+  3. Busca "Node2D" -> click Crear
+  4. Renombrar el nodo raiz: doble-click sobre el nombre -> escribir "Main"
+
+  5. Con "Main" seleccionado, agregar hijos (boton + arriba del arbol):
+     a. Node2D         -> renombrar a "World"
+     b. CanvasLayer    -> renombrar a "UI"
+
+  6. Con "World" seleccionado, agregar hijos:
+     a. Node2D         -> renombrar a "Map"
+     b. Node2D         -> renombrar a "Resources"
+     c. Node2D         -> renombrar a "Structures"
+     d. Node2D         -> renombrar a "Units"
+
+  RESULTADO - El arbol debe verse asi:
+     Main (Node2D)
+     +-- World (Node2D)
+     |   +-- Map (Node2D)
+     |   +-- Resources (Node2D)
+     |   +-- Structures (Node2D)
+     |   +-- Units (Node2D)
+     +-- UI (CanvasLayer)
+
+  7. Guardar: Ctrl+S -> navegar a res://scenes/ -> nombre: main.tscn
+
+  8. Configurar como escena principal:
+     Menu: Proyecto -> Ajustes del Proyecto -> Aplicacion -> Ejecutar
+     -> "Escena principal" -> seleccionar res://scenes/main.tscn
+
+
+================================================================================
+TAREA 3: CREAR ESCENA RESOURCE NODE (el cristal de metal)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 20 minutos
+
+PASOS:
+  1. Escena -> Nueva Escena
+  2. Nodo raiz: Area2D -> renombrar a "ResourceNode"
+
+  3. ADJUNTAR SCRIPT (NO crear uno nuevo):
+     a. Click derecho sobre ResourceNode -> "Adjuntar Script"
+     b. Desmarcar "Crear script nuevo" / click en carpeta
+     c. Navegar a: res://resources/resource_node.gd
+     d. Click Abrir / Cargar
+
+  4. Con ResourceNode seleccionado, agregar hijos:
+
+     a. CollisionShape2D
+        - En el Inspector (derecha), buscar "Shape"
+        - Click el dropdown -> "Nuevo CircleShape2D"
+        - Click sobre el circulo azul en el viewport y arrastra para radio ~30-40 px
+
+     b. Sprite2D
+        - En el Inspector, buscar "Texture"
+        - Arrastrar res://assets/sprites/resource_crystal.png al campo Texture
+        - O si no tienes sprite: click Texture -> "Nuevo PlaceholderTexture2D"
+          y cambiar el color en Modulate (Inspector) a CIAN
+
+  5. CONFIGURAR GRUPO (muy importante):
+     a. Con ResourceNode seleccionado, ir a la pestana "Nodo" (al lado de Inspector)
+     b. Click en la sub-pestana "Grupos"
+     c. En el campo de texto escribir: resource
+     d. Click "Agregar"
+     e. Debe aparecer "resource" en la lista de grupos
+
+  6. CONFIGURAR EXPORT VARS:
+     a. Con ResourceNode seleccionado, en el Inspector buscar "Amount"
+     b. Poner valor: 500 (ya deberia estar por defecto)
+
+  7. Guardar como: res://resources/resource_node.tscn
+
+
+================================================================================
+TAREA 4: CREAR ESCENA COLLECTOR (nave recolectora autonoma)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 25 minutos
+
+   IMPORTANTE: ship.gd busca $NavigationAgent2D por nombre exacto.
+
+PASOS:
+  1. Escena -> Nueva Escena
+  2. Nodo raiz: CharacterBody2D -> renombrar a "Collector"
+
+  3. Adjuntar script existente:
+     Click derecho -> Adjuntar Script -> cargar res://units/collector.gd
+
+  4. Agregar hijos:
+
+     a. CollisionShape2D
+        - Shape: "Nuevo CircleShape2D" o "Nuevo CapsuleShape2D"
+        - Radio: ~15 px (tamano del cuerpo fisico de la nave)
+
+     b. Sprite2D
+        - Texture: res://assets/sprites/collector.png
+        - O Polygon2D: dibujar un triangulito verde
+
+     c. NavigationAgent2D    [NOMBRE EXACTO: "NavigationAgent2D"]
+        - Simplemente agregar el nodo, no cambiar el nombre
+        - En el Inspector puedes ajustar:
+          * Path Desired Distance: 10
+          * Target Desired Distance: 10
+          * Radius: 15
+
+  RESULTADO - Arbol:
+     Collector (CharacterBody2D)
+     +-- CollisionShape2D
+     +-- Sprite2D
+     +-- NavigationAgent2D
+
+  5. Verificar en Inspector que las export vars se ven:
+     - Speed: 180 (heredada de Ship)
+     - Capacity: 50
+     - Mine Rate: 10
+
+  6. Guardar como: res://units/collector.tscn
+
+
+================================================================================
+TAREA 5: CREAR ESCENA COMMANDER (nave del jugador)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 25 minutos
+
+   IMPORTANTE: commander.gd busca $CommandArea y $NavigationAgent2D
+
+PASOS:
+  1. Escena -> Nueva Escena
+  2. Nodo raiz: CharacterBody2D -> renombrar a "Commander"
+  3. Adjuntar script: res://units/commander.gd
+
+  4. Agregar hijos:
+
+     a. CollisionShape2D
+        - Shape: CircleShape2D, radio ~18
+
+     b. Sprite2D
+        - Texture: res://assets/sprites/commander.png (o triangulo azul)
+
+     c. NavigationAgent2D    [NOMBRE EXACTO]
+
+     d. Area2D               -> renombrar a "CommandArea"  [NOMBRE EXACTO]
+        (NO agregar CollisionShape2D hijo a CommandArea.
+         El script commander.gd lo crea automaticamente en _ready()
+         con el radio de command_radius = 400.)
+
+  RESULTADO - Arbol:
+     Commander (CharacterBody2D)
+     +-- CollisionShape2D
+     +-- Sprite2D
+     +-- NavigationAgent2D
+     +-- CommandArea (Area2D)         <- SIN CollisionShape2D hijo
+
+  5. En Inspector verificar:
+     - Speed: 180
+     - Command Radius: 400
+
+  6. Guardar como: res://units/commander.tscn
+
+  PRUEBA: Al correr (F5), click izquierdo en el mapa y el Commander
+  debe moverse hacia ese punto.
+
+
+================================================================================
+TAREA 6: CREAR ESCENA BUILDER (nave constructora)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 20 minutos
+
+PASOS:
+  1. Nueva Escena -> CharacterBody2D -> renombrar a "Builder"
+  2. Adjuntar script: res://units/builder.gd
+
+  3. Agregar hijos:
+     a. CollisionShape2D   (CircleShape2D, radio ~15)
+     b. Sprite2D           (sprite amarillo)
+     c. NavigationAgent2D  [NOMBRE EXACTO]
+
+  RESULTADO - Arbol:
+     Builder (CharacterBody2D)
+     +-- CollisionShape2D
+     +-- Sprite2D
+     +-- NavigationAgent2D
+
+  4. GRUPO: NO necesitas agregar grupo manualmente.
+     El script builder.gd ya hace add_to_group("builders") en _ready().
+
+  5. En Inspector verificar:
+     - Speed: 180
+     - Build Time: 2.0
+
+  6. Guardar como: res://units/builder.tscn
+
+
+================================================================================
+TAREA 7: CREAR ESCENA TURRET (torreta defensiva)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 20 minutos
+
+PASOS:
+  1. Nueva Escena -> Node2D -> renombrar a "Turret"
+  2. Adjuntar script: res://structures/turret.gd
+
+  3. Agregar hijos:
+
+     a. Sprite2D           -> renombrar a "Base"
+        - Texture: res://assets/sprites/turret_base.png
+        - Este es el cuerpo fijo de la torreta
+
+     b. Node2D             -> renombrar a "GunPivot"
+        (Este nodo girara para apuntar. El script rotara el Turret entero,
+         pero si quieres que solo gire el canon, puedes ajustar despues.)
+
+        Dentro de GunPivot agregar:
+        c. Sprite2D         -> renombrar a "Gun"
+           - Texture: res://assets/sprites/turret_gun.png
+           - Offset.x: 20 (para que el canon salga del centro hacia afuera)
+
+  RESULTADO - Arbol:
+     Turret (Node2D)
+     +-- Base (Sprite2D)
+     +-- GunPivot (Node2D)
+         +-- Gun (Sprite2D)
+
+  4. En Inspector verificar:
+     - Instruction Budget: 300
+     - Think Interval: 0.25
+
+  5. GRUPO: No necesitas. El script hace add_to_group("turrets") en _ready().
+
+  6. Guardar como: res://structures/turret.tscn
+
+
+================================================================================
+TAREA 8: CREAR ESCENA COMMAND CENTER (centro de mando)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 25 minutos
+
+PASOS:
+  1. Nueva Escena -> Node2D -> renombrar a "CommandCenter"
+  2. Adjuntar script: res://structures/command_center.gd
+
+  3. Agregar hijos:
+
+     a. Sprite2D
+        - Texture: res://assets/sprites/command_center.png
+        - Escalar si es necesario para que sea mas grande que las naves
+
+     b. Area2D             -> renombrar a "UplinkArea"
+        Dentro de UplinkArea agregar:
+        c. CollisionShape2D
+           - Shape: CircleShape2D, radio: 600
+           (Este area es visual/referencia del alcance de transmision.
+            No la usa el script directamente, pero sirve para debug.)
+
+  RESULTADO - Arbol:
+     CommandCenter (Node2D)
+     +-- Sprite2D
+     +-- UplinkArea (Area2D)
+         +-- CollisionShape2D
+
+  4. CONFIGURAR EXPORTS EN INSPECTOR (MUY IMPORTANTE):
+     a. Uplink Radius: 600
+     b. Turret Scene: arrastrar res://structures/turret.tscn al campo
+        (o click en el campo -> Load -> navegar a turret.tscn)
+     c. Turret Cost: 75
+
+  5. GRUPO: No necesitas. El script hace add_to_group("command_center").
+
+  6. Guardar como: res://structures/command_center.tscn
+
+
+================================================================================
+TAREA 9: CREAR EL MAPA CON NAVEGACION
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 30-45 minutos
+NOTA: Esta es la tarea mas delicada. Sin navegacion, NINGUNA nave se mueve.
+
+PASOS:
+  1. Abrir res://scenes/main.tscn
+
+  2. OPCION A - Mapa con TileMapLayer (recomendada para mapa final):
+     a. Seleccionar Main/World/Map
+     b. Agregar hijo: TileMapLayer
+     c. En el Inspector: TileSet -> "Nuevo TileSet"
+     d. Click en el TileSet creado para abrir el editor de TileSet (panel inferior)
+     e. En el editor de TileSet:
+        - Click "+" para agregar textura -> seleccionar tile_ground.png
+        - Tamano de tile: 64x64 (o el tamano de tu sprite)
+     f. Volver al TileMapLayer y pintar el suelo del mapa usando la herramienta
+        de pincel (panel inferior "TileMap")
+     g. Pintar un area de al menos 20x15 tiles
+
+  3. OPCION B - Fondo simple con Sprite (placeholder rapido):
+     a. Seleccionar Main/World/Map
+     b. Agregar hijo: Sprite2D
+     c. Texture: Crear "New GradientTexture2D" de 1920x1080 color marron oscuro
+     (Esto solo es un fondo. Igual necesitas el NavigationRegion2D del paso 4.)
+
+  4. AGREGAR NAVEGACION (obligatorio en ambas opciones):
+     a. Seleccionar Main/World/Map
+     b. Agregar hijo: NavigationRegion2D
+     c. En el Inspector, buscar "Navigation Polygon"
+     d. Click -> "Nuevo NavigationPolygon"
+     e. En la barra superior del viewport aparecen herramientas de navegacion
+     f. Click en "Crear nuevo poligono" (icono de lapiz con puntos)
+     g. Dibujar un rectangulo grande cubriendo toda el area jugable:
+        - Click en cada esquina para poner puntos
+        - Click derecho o Enter para cerrar el poligono
+     h. BAKE: Click en el boton "Bake NavigationPolygon" (barra superior)
+        Debe aparecer el area pintada de un color semi-transparente
+
+  5. VERIFICACION:
+     - El area azul/verde semi-transparente debe cubrir donde quieras que
+       caminen las naves
+     - Si hay obstaculos, dibuja poligonos internos para excluirlos
+     - Si no ves color semi-transparente, el bake fallo o el poligono esta mal
+
+
+================================================================================
+TAREA 10: CREAR HUD (interfaz de recursos)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 15 minutos
+
+PASOS:
+  1. Nueva Escena -> Control -> renombrar a "HUD"
+  2. Adjuntar script: res://ui/hud.gd
+
+  3. Agregar hijo:
+     a. Label              -> renombrar a "MetalLabel"  [NOMBRE EXACTO]
+        - Text: "Metal: 100"
+        - En Inspector -> Control -> Layout -> Anchors Preset: "Top Left"
+        - Position: x=10, y=10 (esquina superior izquierda)
+        - Font Size: 24 (en Theme Overrides -> Font Sizes)
+        - Font Color: blanco o dorado
+
+  RESULTADO - Arbol:
+     HUD (Control)
+     +-- MetalLabel (Label)
+
+  4. Guardar como: res://ui/hud.tscn
+
+
+================================================================================
+TAREA 11: INSTANCIAR TODO EN MAIN Y PRIMERA PRUEBA
+================================================================================
+
+Responsable: Ambos juntos (prueba critica)
+Tiempo estimado: 30 minutos
+
+PASOS:
+  1. Abrir res://scenes/main.tscn
+
+  2. INSTANCIAR HUD:
+     a. Seleccionar Main/UI
+     b. Click en el icono de cadena/link (Instanciar Escena Hija)
+        o Ctrl+Shift+A
+     c. Seleccionar res://ui/hud.tscn -> Abrir
+
+  3. INSTANCIAR COMMAND CENTER:
+     a. Seleccionar Main/World/Structures
+     b. Instanciar res://structures/command_center.tscn
+     c. Moverlo al CENTRO del mapa (arrastrar en el viewport)
+        Position sugerida: x=600, y=400
+
+  4. INSTANCIAR RECURSOS:
+     a. Seleccionar Main/World/Resources
+     b. Instanciar res://resources/resource_node.tscn
+     c. Moverlo a una posicion alejada del centro: x=200, y=200
+     d. Repetir: instanciar 2 mas en posiciones diferentes
+        Ej: (900, 150) y (300, 600)
+
+  5. INSTANCIAR COMMANDER:
+     a. Seleccionar Main/World/Units
+     b. Instanciar res://units/commander.tscn
+     c. Posicion: cerca del CommandCenter, ej: x=550, y=400
+
+  6. INSTANCIAR COLLECTOR:
+     a. Seleccionar Main/World/Units
+     b. Instanciar res://units/collector.tscn
+     c. Posicion: cerca del CommandCenter, ej: x=650, y=400
+
+  7. INSTANCIAR BUILDER:
+     a. Seleccionar Main/World/Units
+     b. Instanciar res://units/builder.tscn
+     c. Posicion: cerca del CommandCenter, ej: x=600, y=450
+
+  ARBOL FINAL DE MAIN:
+     Main (Node2D)
+     +-- World (Node2D)
+     |   +-- Map (Node2D)
+     |   |   +-- TileMapLayer (o Sprite2D fondo)
+     |   |   +-- NavigationRegion2D
+     |   +-- Resources (Node2D)
+     |   |   +-- ResourceNode
+     |   |   +-- ResourceNode2
+     |   |   +-- ResourceNode3
+     |   +-- Structures (Node2D)
+     |   |   +-- CommandCenter
+     |   +-- Units (Node2D)
+     |       +-- Commander
+     |       +-- Collector
+     |       +-- Builder
+     +-- UI (CanvasLayer)
+         +-- HUD
+
+  8. GUARDAR (Ctrl+S)
+
+  9. EJECUTAR (F5)
+
+  CHECKLIST DE PRUEBA:
+  [ ] La ventana abre sin errores en la consola roja
+  [ ] Se ve "Metal: 100" arriba a la izquierda
+  [ ] El Collector se mueve solo hacia un cristal
+  [ ] El Collector llega al cristal y se queda un momento (minando)
+  [ ] El Collector vuelve al CommandCenter
+  [ ] El numero de Metal sube cuando el Collector llega a la base
+  [ ] Click izquierdo: el Commander se mueve al punto clickeado
+  [ ] El cristal desaparece cuando se agota su amount
+
+  SI HAY ERRORES:
+  - "Cannot find node NavigationAgent2D" -> El nodo hijo no se llama exactamente
+    "NavigationAgent2D" en la escena del Collector/Commander/Builder
+  - "Cannot find node CommandArea" -> Falta el Area2D llamado "CommandArea"
+    dentro de la escena Commander
+  - "Cannot find node MetalLabel" -> El Label dentro del HUD no se llama
+    "MetalLabel"
+  - Las naves no se mueven -> NavigationRegion2D no tiene bake. Abrir main.tscn,
+    seleccionar NavigationRegion2D y hacer Bake otra vez
+  - El Collector no encuentra recursos -> Verificar que el ResourceNode tiene
+    el grupo "resource" (con minuscula, sin comillas)
+
+
+================================================================================
+TAREA 12 (FASE 2): INTERFAZ DE COLOCACION DE TORRETA
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 30-45 minutos
+Requisito previo: Tareas 1-11 completadas y funcionando
+
+PASOS:
+  1. Abrir res://ui/hud.tscn
+
+  2. Agregar hijo a HUD:
+     a. Button -> renombrar a "BuildTurretBtn"
+     b. Text: "Construir Torreta (75 Metal)"
+     c. Position: debajo de MetalLabel, ej: x=10, y=50
+     d. Size: 250x40
+
+  3. Implementar logica de colocacion:
+     Hay dos formas, la mas simple es agregar al script hud.gd:
+
+     - Al presionar el boton, activar un modo "colocando"
+     - Al hacer click en el mapa, llamar a command_center.order_turret(pos)
+     - Desactivar el modo
+
+     (Si no quieren tocar codigo, pueden simplificar: hacer que el boton
+      coloque la torreta en una posicion fija predeterminada para testear.)
+
+  4. PRUEBA:
+     [ ] Click en "Construir Torreta" -> Metal baja de 100 a 25
+     [ ] El Builder se mueve hacia el punto de construccion
+     [ ] Despues de 2 segundos de construccion, aparece la Torreta
+     [ ] La Torreta queda visible en el mapa
+
+
+================================================================================
+TAREA 13 (FASE 3): CREAR ESCENA ENEMY
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 30 minutos
+NOTA: Necesita un script nuevo (units/enemy.gd). Pedir al programador que lo cree.
+
+PASOS:
+  1. Nueva Escena -> CharacterBody2D -> renombrar a "Enemy"
+  2. Adjuntar script: res://units/enemy.gd (hay que crearlo)
+
+  3. Agregar hijos:
+     a. CollisionShape2D   (CircleShape2D radio ~15)
+     b. Sprite2D           (sprite rojo)
+     c. NavigationAgent2D  [NOMBRE EXACTO]
+
+  4. GRUPO: Agregar al grupo "enemies"
+     (O que el script lo haga en _ready())
+
+  5. Guardar como: res://units/enemy.tscn
+
+  Logica que necesita el script enemy.gd:
+  - Buscar el command_center mas cercano
+  - Moverse hacia el con NavigationAgent2D
+  - Al llegar, hacer dano
+  - Tener variable HP que al llegar a 0 hace queue_free()
+
+
+================================================================================
+TAREA 14 (FASE 3): CREAR ESCENA BULLET
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 20 minutos
+NOTA: Necesita script nuevo (structures/bullet.gd). Pedir al programador.
+
+PASOS:
+  1. Nueva Escena -> Area2D -> renombrar a "Bullet"
+  2. Adjuntar script: res://structures/bullet.gd (hay que crearlo)
+
+  3. Agregar hijos:
+     a. CollisionShape2D   (CircleShape2D radio ~5)
+     b. Sprite2D           (punto blanco pequeno)
+     c. VisibleOnScreenNotifier2D (para destruir si sale de pantalla)
+
+  4. Guardar como: res://structures/bullet.tscn
+
+  Logica que necesita bullet.gd:
+  - Recibir direccion y velocidad
+  - Moverse en linea recta
+  - Al colisionar con nodo del grupo "enemies", restar HP y queue_free()
+  - Destruirse si sale de pantalla o tras N segundos
+
+
+================================================================================
+TAREA 15 (FASE 4): CREAR ESCENA CODE CONSOLE
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 30 minutos
+Requisito previo: Fases 1-3 funcionando
+
+   IMPORTANTE: El script busca nodos por ruta exacta:
+   $Panel/VBox/CodeEdit
+   $Panel/VBox/DeployBtn
+   $Panel/VBox/ErrorLabel
+
+PASOS:
+  1. Nueva Escena -> CanvasLayer -> renombrar a "CodeConsole"
+  2. Adjuntar script: res://ui/code_console.gd
+
+  3. Agregar hijo:
+     a. PanelContainer     -> renombrar a "Panel"  [NOMBRE EXACTO]
+        - En Inspector -> Control -> Layout -> Anchors Preset: "Center"
+        - Custom Minimum Size: x=500, y=400
+
+  4. Dentro de Panel agregar:
+     b. VBoxContainer      -> renombrar a "VBox"   [NOMBRE EXACTO]
+
+  5. Dentro de VBox agregar (en este orden):
+     c. CodeEdit           -> nombre: "CodeEdit"   [NOMBRE EXACTO]
+        - Custom Minimum Size: y=280
+        - En Inspector: habilitar "Wrap Mode" = Boundary
+        - Texto placeholder: "def on_tick():
+            t = nearest_enemy()
+            if t:
+                aim(t)
+                fire()"
+
+     d. Button             -> nombre: "DeployBtn"  [NOMBRE EXACTO]
+        - Text: ">> Deploy <<"
+        - Custom Minimum Size: y=35
+
+     e. Label              -> nombre: "ErrorLabel" [NOMBRE EXACTO]
+        - Text: "Listo para programar"
+        - Custom Minimum Size: y=25
+
+  RESULTADO - Arbol (las rutas deben ser exactas):
+     CodeConsole (CanvasLayer)
+     +-- Panel (PanelContainer)
+         +-- VBox (VBoxContainer)
+             +-- CodeEdit (CodeEdit)
+             +-- DeployBtn (Button)
+             +-- ErrorLabel (Label)
+
+  6. Guardar como: res://ui/code_console.tscn
+  7. Instanciar en Main/UI
+  8. Por defecto dejarlo invisible (Visible = false en el Inspector del
+     CodeConsole). Se mostrara al seleccionar una torreta.
+
+
+================================================================================
+DIVISION DE TRABAJO SUGERIDA
+================================================================================
+
+  PERSONA A (Arte / Escenas)        PERSONA B (Escenas / Integracion)
+  ---------------------------       --------------------------------
+  Tarea 1: Carpetas                 Tarea 2: Escena Main
+  Tarea 3: ResourceNode             Tarea 5: Commander
+  Tarea 4: Collector                Tarea 6: Builder
+  Tarea 7: Turret                   Tarea 8: CommandCenter
+  Tarea 10: HUD                     Tarea 9: Mapa + Navegacion
+  Sprites placeholder               Tarea 11: Integrar y probar (juntos)
+
+  Despues de Tarea 11 (prueba juntos):
+  Tarea 12: UI colocacion           Tarea 13: Enemy (con programador)
+  Tarea 15: CodeConsole             Tarea 14: Bullet (con programador)
+
+
+================================================================================
+ERRORES COMUNES Y SOLUCIONES
+================================================================================
+
+ERROR: "Cannot get path of node as it is not in a SceneTree"
+CAUSA: Intentas acceder a un nodo antes de que este en el arbol.
+FIX:   Mover la logica a _ready() o usar call_deferred().
+
+ERROR: "NavigationAgent2D could not find a NavigationMap"
+CAUSA: No hay NavigationRegion2D en la escena, o no tiene bake.
+FIX:   Ir a main.tscn -> seleccionar NavigationRegion2D -> hacer Bake.
+
+ERROR: "Null instance" al buscar grupo "command_center"
+CAUSA: El CommandCenter no esta instanciado en main.tscn, o el script
+       no hace add_to_group("command_center").
+FIX:   Verificar que command_center.tscn esta instanciado en Structures.
+
+ERROR: El Collector se queda quieto
+CAUSA: Probablemente no hay nodos en el grupo "resource".
+FIX:   Seleccionar cada ResourceNode en main.tscn -> Nodo -> Grupos ->
+       verificar que tiene "resource".
+
+ERROR: "Cannot find node MetalLabel" (o similar)
+CAUSA: El nodo hijo no tiene el nombre exacto que busca el @onready.
+FIX:   Renombrar el nodo hijo al nombre exacto que indica el error.
+
+ERROR: Las naves se mueven pero atraviesan todo
+CAUSA: Las capas de colision no estan configuradas.
+FIX:   En cada CharacterBody2D, ir a Inspector -> Collision -> Layer/Mask
+       y configurar que capas usar (capa 1 para todo al inicio esta bien).
+
+================================================================================
+FIN DEL DOCUMENTO
+Recuerda: Ctrl+S despues de cada escena. Git commit despues de cada tarea.
+================================================================================

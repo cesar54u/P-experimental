@@ -1,0 +1,258 @@
+================================================================================
+PLAN DE DESARROLLO: RTS CON SCRIPTING PYTHON-LIKE (GODOT 4.7)
+================================================================================
+
+Estado del proyecto:
+- Los scripts GDScript base (15 archivos) y autoloads ya estan creados en el proyecto.
+- Tu trabajo en el editor consiste en armar las escenas (.tscn), conectar nodos y testear.
+
+REGLA DE ORO DE NOMBRES DE NODOS:
+Los scripts usan @onready buscando nombres exactos. Respeta mayusculas/minusculas:
+- En Collector / Builder / Commander: debe existir "NavigationAgent2D"
+- En Commander: debe existir "CommandArea" (Area2D)
+- En HUD: debe existir "MetalLabel" (Label)
+- En CodeConsole: deben existir "CodeEdit", "DeployBtn", "ErrorLabel"
+
+================================================================================
+FASE 0: SETUP Y CONFIGURACION INICIAL (~2 HORAS)
+================================================================================
+
+Paso 1: Verificar Autoloads en Godot
+  1. Abre el proyecto en Godot 4.
+  2. Ve a: Proyecto -> Ajustes del Proyecto -> Autoload.
+  3. Confirma que existen:
+     - EventBus -> res://autoload/event_bus.gd
+     - Economy  -> res://autoload/economy.gd
+  4. Si falta alguno, agregalo con el icono de carpeta y asigna ese nombre exacto.
+
+Paso 2: Inicializar Git (Terminal en la carpeta del proyecto)
+  git init
+  git add .
+  git commit -m "Scaffold inicial de scripts y autoloads"
+
+Paso 3: Crear la Escena Principal (Main)
+  1. Escena -> Nueva Escena -> Nodo Raiz: Node2D -> Renombralo a "Main".
+  2. Crea la siguiente jerarquia de nodos:
+     Main (Node2D)
+     ├── World (Node2D)
+     │   ├── Map (Node2D)
+     │   ├── Resources (Node2D)
+     │   ├── Structures (Node2D)
+     │   └── Units (Node2D)
+     └── UI (CanvasLayer)
+  3. Guarda la escena como: res://scenes/main.tscn (crea la carpeta scenes si no existe).
+  4. Ve a Ajustes del Proyecto -> Aplicacion -> Ejecutar -> Escena Principal y selecciona res://scenes/main.tscn.
+
+
+================================================================================
+FASE 1: MVP ECONOMICO (2 - 3 DIAS)
+Objetivo: El metal aumenta en el HUD de forma autonoma y el nodo se agota.
+================================================================================
+
+Paso 1: Escena ResourceNode (res://resources/resource_node.tscn)
+  1. Nueva Escena -> Raiz: Area2D -> Renombrar a "ResourceNode".
+  2. Adjunta el script: res://resources/resource_node.gd.
+  3. Estructura:
+     ResourceNode (Area2D)
+     ├── CollisionShape2D  (Shape: CircleShape2D, radio aprox 30-40)
+     └── Sprite2D          (Asigna un sprite o textura provisional)
+  4. En la pestana Nodo -> Grupos: Agrega el grupo "resource".
+  5. Guarda como: res://resources/resource_node.tscn.
+
+Paso 2: Escena Collector (res://units/collector.tscn)
+  1. Nueva Escena -> Raiz: CharacterBody2D -> Renombrar a "Collector".
+  2. Adjunta el script: res://units/collector.gd.
+  3. Estructura:
+     Collector (CharacterBody2D)
+     ├── CollisionShape2D   (Shape: CircleShape2D o CapsuleShape2D)
+     ├── Sprite2D           (Sprite de la nave recolectora)
+     └── NavigationAgent2D  (OBLIGATORIO: nombre exacto)
+  4. Guarda como: res://units/collector.tscn.
+
+Paso 3: Escena Commander (res://units/commander.tscn)
+  1. Nueva Escena -> Raiz: CharacterBody2D -> Renombrar a "Commander".
+  2. Adjunta el script: res://units/commander.gd.
+  3. Estructura:
+     Commander (CharacterBody2D)
+     ├── CollisionShape2D
+     ├── Sprite2D
+     ├── NavigationAgent2D
+     └── CommandArea (Area2D)       (OBLIGATORIO: nombre exacto)
+         └── CollisionShape2D       (Shape: CircleShape2D, radio 400)
+  4. Guarda como: res://units/commander.tscn.
+
+Paso 4: Mapa y Navegacion
+  1. Abre res://scenes/main.tscn.
+  2. En Main/World/Map:
+     - Agrega un nodo TileMapLayer (o Sprite de fondo temporal).
+     - Agrega un nodo NavigationRegion2D como hijo de Map.
+     - En el inspector de NavigationRegion2D -> NavigationPolygon -> Nuevo NavigationPolygon.
+     - Dibuja el area transitable cubriendo la zona de juego.
+     - Presiona el boton "Bake NavigationPolygon" en la barra superior.
+  Nota: Sin bake de navegacion, las naves no podran moverse.
+
+Paso 5: Escena HUD (res://ui/hud.tscn)
+  1. Nueva Escena -> Raiz: Control -> Renombrar a "HUD".
+  2. Adjunta el script: res://ui/hud.gd.
+  3. Estructura:
+     HUD (Control)
+     └── MetalLabel (Label)   (OBLIGATORIO: nombre exacto "MetalLabel")
+  4. Guarda como: res://ui/hud.tscn.
+  5. Instancia hud.tscn como hijo de Main/UI.
+
+Paso 6: Instanciar y Probar Fase 1
+  1. En Main/World/Resources: Instancia 1 o 2 resource_node.tscn.
+  2. En Main/World/Units: Instancia collector.tscn y commander.tscn.
+  3. Presiona F5:
+     - El Collector debe dirigirse al recurso, minar, volver y sumar metal.
+     - Con click izquierdo, el Commander debe moverse hacia el punto del click.
+
+
+================================================================================
+FASE 2: CONSTRUCCION (3 - 5 DIAS)
+Objetivo: Gastar recursos para que un Builder viaje y construya una torreta.
+================================================================================
+
+Paso 1: Escena Builder (res://units/builder.tscn)
+  1. Nueva Escena -> Raiz: CharacterBody2D -> Renombrar a "Builder".
+  2. Adjunta el script: res://units/builder.gd.
+  3. Estructura:
+     Builder (CharacterBody2D)
+     ├── CollisionShape2D
+     ├── Sprite2D
+     └── NavigationAgent2D
+  4. Pestana Nodo -> Grupos -> Agrega al grupo "builders".
+  5. Guarda como: res://units/builder.tscn.
+
+Paso 2: Escena Turret (res://structures/turret.tscn)
+  1. Nueva Escena -> Raiz: Node2D -> Renombrar a "Turret".
+  2. Adjunta el script: res://structures/turret.gd.
+  3. Estructura:
+     Turret (Node2D)
+     ├── Sprite2D (Base de la torreta)
+     └── GunPivot (Node2D)
+         └── Sprite2D (Canon)
+  4. Guarda como: res://structures/turret.tscn.
+
+Paso 3: Escena CommandCenter (res://structures/command_center.tscn)
+  1. Nueva Escena -> Raiz: Node2D -> Renombrar a "CommandCenter".
+  2. Adjunta el script: res://structures/command_center.gd.
+  3. Estructura:
+     CommandCenter (Node2D)
+     ├── Sprite2D
+     └── UplinkArea (Area2D)
+         └── CollisionShape2D (CircleShape2D con radio 600)
+  4. En el Inspector: asigna en "Turret Scene" la escena res://structures/turret.tscn.
+  5. Pestana Nodo -> Grupos -> Agrega al grupo "command_center".
+  6. Guarda como: res://structures/command_center.tscn.
+
+Paso 4: Boton de Construccion en el HUD
+  1. En hud.tscn, anade un boton "Construir Torreta (75 Metal)".
+  2. Conectar senal pressed para iniciar modo de colocacion (o click derecho en el mapa).
+  3. Al confirmar posicion, llamar a command_center.order_turret(posicion).
+
+Paso 5: Instanciar en Main y Probar
+  1. Instancia command_center.tscn en Main/World/Structures.
+  2. Instancia builder.tscn en Main/World/Units.
+  3. Ejecuta F5: Ordena la torreta y verifica que el builder se mueve y la instancia.
+
+
+================================================================================
+FASE 3: COMBATE BASE (4 - 6 DIAS)
+Objetivo: Oleadas enemigas, proyectiles y combate sin necesidad de scripts del jugador.
+================================================================================
+
+Paso 1: Escena Enemy (res://units/enemy.tscn)
+  1. CharacterBody2D con Sprite, CollisionShape2D, NavigationAgent2D.
+  2. Script units/enemy.gd: persigue CommandCenter o unidades cercanas, tiene vida (HP).
+  3. Agregalo al grupo "enemies".
+
+Paso 2: Escena Bullet (res://structures/bullet.tscn)
+  1. Area2D con CollisionShape2D y Sprite2D.
+  2. Al colisionar con nodos en el grupo "enemies", resta HP y hace queue_free().
+
+Paso 3: Disparo en Turret
+  1. Completar la funcion shoot() en turret.gd para instanciar bullet.tscn hacia el target.
+  2. La torreta sin script ejecutara default_behavior() atacando al enemigo mas cercano.
+
+Paso 4: WaveManager (res://world/wave_manager.gd)
+  1. Spawner con Timer que genera oleadas perimetrales.
+  2. Verificar ciclo de juego completo: recolectar -> construir -> defenderse.
+
+
+================================================================================
+FASE 4: CONSOLA Y RUNTIME PYTHON-LIKE (2 - 4 SEMANAS)
+Objetivo: El jugador escribe codigo Python-like, presiona Deploy y la torreta lo ejecuta.
+================================================================================
+
+Paso 1: Escena CodeConsole (res://ui/code_console.tscn)
+  1. Raiz: CanvasLayer -> Renombrar a "CodeConsole".
+  2. Adjunta script: res://ui/code_console.gd.
+  3. Estructura exacta requerida:
+     CodeConsole (CanvasLayer)
+     └── Panel (PanelContainer o Panel)
+         └── VBox (VBoxContainer)
+             ├── CodeEdit       (OBLIGATORIO: nombre exacto "CodeEdit")
+             ├── DeployBtn      (OBLIGATORIO: Button con nombre "DeployBtn")
+             └── ErrorLabel     (OBLIGATORIO: Label con nombre "ErrorLabel")
+  4. Instanciar en Main/UI.
+
+Paso 2: Lexer (Tokenizador) en res://scripting/mini_py_runtime.gd
+  - Procesar texto y generar tokens:
+    * Literales: NUMBER, STRING, IDENTIFIER/NAME
+    * Palabras clave: def, if, elif, else, while, for, in, and, or, not, True, False, None
+    * Simbolos: :, (, ), [, ], ,, +, -, *, /, ==, !=, <, <=, >, >=, =
+    * Manejo de sangria Python: INDENT, DEDENT, NEWLINE
+
+Paso 3: Parser (Generador de AST)
+  - Construir arbol de sintaxis abstracta en Diccionarios:
+    * Declaracion de funcion (def on_tick():)
+    * Condicionales (if / elif / else)
+    * Asignacion de variables
+    * Llamadas a funcion: nearest_enemy(), distance(t), aim(t), fire()
+
+Paso 4: Interprete Tree-Walking con Presupuesto (Instruction Budget)
+  - Evaluar nodos paso a paso.
+  - Cada operacion o llamada incrementa un contador steps.
+  - Si steps > instruction_budget (ej. 300):
+    Abortar ejecucion con error "Presupuesto de instrucciones excedido".
+    Esto previene loops infinitos como "while True:".
+
+Paso 5: Sandbox y Lista Blanca
+  - Solo permitir invocar las funciones provistas por TurretAPI.exposed().
+  - Sin acceso al motor Godot, OS, ni archivos.
+
+
+================================================================================
+FASE 5: RED DE COMUNICACION Y ENDURECIMIENTO (1 - 2 SEMANAS)
+================================================================================
+
+Paso 1: Autoload NetworkRegistry (res://autoload/network_registry.gd)
+  - Registro central de todas las torretas activas (ID, posicion, version de firmware).
+
+Paso 2: Rango de Transmision y Repetidores
+  - El CommandCenter solo puede actualizar torretas dentro del uplink_radius (600 px).
+  - Opcion de construir torres repetidoras para extender la cobertura.
+
+Paso 3: Pruebas de Resistencia Sandbox
+  - Intentos de recursion profunda.
+  - Errores de tipo y sintaxis mal formada.
+  - Comprobacion de determinismo y reporte de errores con numero de linea en ErrorLabel.
+
+
+================================================================================
+FASE 6: PULIDO Y FINALIZACION
+================================================================================
+
+Paso 1: Persistencia de Codigo
+  - Guardar y cargar scripts del jugador en formato texto (.py o .txt) usando FileAccess.
+
+Paso 2: Manual / Referencia de API Integrada
+  - Ventana de ayuda en el juego explicando las funciones disponibles de la API:
+    * nearest_enemy() -> Node o null
+    * distance(target) -> float
+    * aim(target)
+    * fire()
+
+Paso 3: Balance general de economia, oleadas y presupuesto de ejecucion.
+================================================================================
