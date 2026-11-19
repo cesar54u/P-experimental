@@ -55,13 +55,13 @@ navigation_polygon = SubResource("NavigationPolygon_f5ow4")
 position = Vector2(250, 250)
 
 [node name="resource_node" parent="World/Resources" unique_id=67013694 instance=ExtResource("1_tefeu")]
-position = Vector2(236, 215)
+position = Vector2(132, 178)
 
 [node name="resource_node2" parent="World/Resources" unique_id=1036441307 instance=ExtResource("1_tefeu")]
-position = Vector2(900, 150)
+position = Vector2(679, 19)
 
 [node name="resource_node3" parent="World/Resources" unique_id=1618172102 instance=ExtResource("1_tefeu")]
-position = Vector2(300, 600)
+position = Vector2(387, 303)
 
 [node name="Structures" type="Node2D" parent="World" unique_id=480401400]
 
