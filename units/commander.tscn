@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://o2lypurbp5tw"]
+
+[ext_resource type="Script" uid="uid://du1ya1rutne31" path="res://units/commander.gd" id="1_b1jnr"]
+[ext_resource type="Texture2D" uid="uid://b7c1yl5d3btqo" path="res://assets/sprites/command_center.png" id="2_n30er"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_xicvs"]
+radius = 18.0
+
+[node name="Commander" type="CharacterBody2D" unique_id=773408497]
+script = ExtResource("1_b1jnr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1343225303]
+shape = SubResource("CircleShape2D_xicvs")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=505710180]
+texture = ExtResource("2_n30er")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1235253940]
+
+[node name="CommandArea" type="Area2D" parent="." unique_id=531234182]
