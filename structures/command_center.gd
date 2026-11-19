@@ -3,11 +3,20 @@ class_name CommandCenter extends Node2D
 @export var uplink_radius: float = 600.0
 @export var turret_scene: PackedScene
 @export var turret_cost: int = 75
+@export var hp: int = 200
 
 var runtime: ScriptRuntime = MiniPyRuntime.new()
 
 func _ready() -> void:
 	add_to_group("command_center")
+
+## Recibe daño de enemigos; al llegar a 0 se pausa el juego.
+func take_damage(amount: int) -> void:
+	hp -= amount
+	if hp <= 0:
+		hp = 0
+		print("GAME OVER")
+		get_tree().paused = true
 
 func order_turret(pos: Vector2) -> bool:
 	var builder := _find_idle_builder()
