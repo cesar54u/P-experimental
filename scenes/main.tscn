@@ -1,6 +1,11 @@
 [gd_scene format=4 uid="uid://di7uk5yq8upf2"]
 
 [ext_resource type="Texture2D" uid="uid://byhtcnycrb64g" path="res://assets/sprites/tile_ground.png" id="1_o5qli"]
+[ext_resource type="PackedScene" uid="uid://jwbuntr1tc3y" path="res://scenes/resource_node.tscn" id="1_tefeu"]
+[ext_resource type="PackedScene" uid="uid://dwnjt5pwcawlo" path="res://structures/command_center.tscn" id="3_o6xl0"]
+[ext_resource type="PackedScene" uid="uid://birdmi70wron1" path="res://units/collector.tscn" id="4_tipki"]
+[ext_resource type="PackedScene" uid="uid://bq10kv6immkd4" path="res://units/builder.tscn" id="5_85g3d"]
+[ext_resource type="PackedScene" uid="uid://cag35chr662n8" path="res://ui/hud.tscn" id="6_choun"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0wfyh"]
 texture = ExtResource("1_o5qli")
@@ -35,6 +40,15 @@ outlines = Array[PackedVector2Array]([PackedVector2Array(-134, -138, -140, 194, 
 
 [node name="Resources" type="Node2D" parent="World" unique_id=262983252]
 
+[node name="resource_node" parent="World/Resources" unique_id=67013694 instance=ExtResource("1_tefeu")]
+position = Vector2(200, 200)
+
+[node name="resource_node2" parent="World/Resources" unique_id=1036441307 instance=ExtResource("1_tefeu")]
+position = Vector2(900, 150)
+
+[node name="resource_node3" parent="World/Resources" unique_id=1618172102 instance=ExtResource("1_tefeu")]
+position = Vector2(300, 600)
+
 [node name="Map" type="Node2D" parent="World" unique_id=1633654888]
 
 [node name="TileMapLayer" type="TileMapLayer" parent="World/Map" unique_id=1130627099]
@@ -48,6 +62,17 @@ navigation_polygon = SubResource("NavigationPolygon_f5ow4")
 
 [node name="Structures" type="Node2D" parent="World" unique_id=480401400]
 
+[node name="CommandCenter" parent="World/Structures" unique_id=1914525806 instance=ExtResource("3_o6xl0")]
+position = Vector2(600, 400)
+
 [node name="Units" type="Node2D" parent="World" unique_id=1089980327]
 
+[node name="Collector" parent="World/Units" unique_id=175726685 instance=ExtResource("4_tipki")]
+position = Vector2(650, 400)
+
+[node name="Builder" parent="World/Units" unique_id=1845190268 instance=ExtResource("5_85g3d")]
+position = Vector2(600, 450)
+
 [node name="UI" type="CanvasLayer" parent="." unique_id=597672302]
+
+[node name="Hud" parent="UI" unique_id=1156096036 instance=ExtResource("6_choun")]
