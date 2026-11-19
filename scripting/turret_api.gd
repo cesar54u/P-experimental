@@ -1,20 +1,11 @@
 class_name TurretAPI extends RefCounted
 
-var turret: Turret
+var turret: Node2D
 var aim_target: Node2D = null
 var firing: bool = false
 
-func _init(t: Turret) -> void:
+func _init(t: Node2D) -> void:
 	turret = t
-
-## Lista blanca: nombre de función -> Callable
-func exposed() -> Dictionary:
-	return {
-		"nearest_enemy": nearest_enemy,
-		"distance":       distance,
-		"aim":            aim,
-		"fire":           fire,
-	}
 
 func nearest_enemy() -> Variant:
 	var best: Node2D = null
@@ -38,7 +29,6 @@ func fire() -> void:
 	firing = true
 
 func flush() -> void:
-	## Llama esto al final de cada tick para consumir las acciones pendientes.
 	if aim_target != null and is_instance_valid(aim_target):
 		turret.rotation = turret.global_position.angle_to_point(aim_target.global_position)
 	if firing:

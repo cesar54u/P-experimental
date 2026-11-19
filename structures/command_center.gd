@@ -5,9 +5,10 @@ class_name CommandCenter extends Node2D
 @export var turret_cost: int = 75
 @export var hp: int = 200
 
-var runtime: ScriptRuntime = MiniPyRuntime.new()
+var runtime: MiniPyRuntime = null
 
 func _ready() -> void:
+	runtime = MiniPyRuntime.new()
 	add_to_group("command_center")
 
 ## Recibe daño de enemigos; al llegar a 0 se pausa el juego.
@@ -20,19 +21,25 @@ func take_damage(amount: int) -> void:
 
 func order_turret(pos: Vector2) -> bool:
 	var builder := _find_idle_builder()
-	if builder == null or not Economy.spend(turret_cost):
+	if builder == null:
+		print("No hay constructor disponible")
+		return false
+	if not Economy.spend(turret_cost):
+		print("Metal insuficiente")
 		return false
 	var o := Order.build(pos, turret_scene)
 	builder.give_order(o)
 	return true
 
 func deploy_program(turret: Turret, source: String) -> void:
+	if runtime == null:
+		runtime = MiniPyRuntime.new()
 	var result: Dictionary = runtime.compile(source)
 	if not result.ok:
 		EventBus.program_deployed.emit(turret.id, false, result.error)
 		return
 	if global_position.distance_to(turret.global_position) > uplink_radius:
-		EventBus.program_deployed.emit(turret.id, false, "Fuera de alcance")
+		EventBus.program_deployed.emit(turret.id, false, "Fuera de alcance del uplink")
 		return
 	turret.receive_program(result.program)
 	EventBus.program_deployed.emit(turret.id, true, "OK")

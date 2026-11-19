@@ -36,7 +36,7 @@ vertices = PackedVector2Array(1212.8672, 633.1094, 15.9296875, 646.8828, 12.0625
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(2, 10, 6, 657, 1223, 643, 1215, 7)])
 
-[node name="main" type="Node2D" unique_id=1942328595]
+[node name="main2" type="Node2D" unique_id=1942328595]
 
 [node name="World" type="Node2D" parent="." unique_id=1966713190]
 
@@ -67,6 +67,9 @@ position = Vector2(387, 303)
 
 [node name="CommandCenter" parent="World/Structures" unique_id=1914525806 instance=ExtResource("3_o6xl0")]
 position = Vector2(600, 400)
+uplink_radius = null
+turret_cost = null
+hp = null
 
 [node name="Units" type="Node2D" parent="World" unique_id=1089980327]
 
@@ -76,11 +79,9 @@ position = Vector2(650, 400)
 [node name="Builder" parent="World/Units" unique_id=1845190268 instance=ExtResource("5_85g3d")]
 position = Vector2(601, 450)
 
-[node name="EnemySpawner" type="Node2D" parent="World" unique_id=438974307]
+[node name="EnemySpawner" type="Node2D" parent="World" unique_id=438974307 groups=["resource"]]
 script = ExtResource("6_tipki")
 enemy_scene = ExtResource("7_85g3d")
-spawn_interval = 8.0
-map_size = Vector2(1152, 648)
 
 [node name="Timer" type="Timer" parent="World/EnemySpawner" unique_id=787832165]
 
