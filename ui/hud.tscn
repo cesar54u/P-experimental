@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cag35chr662n8"]
 
 [ext_resource type="Script" uid="uid://d37dkwo5e362l" path="res://ui/hud.gd" id="1_rbyyf"]
+[ext_resource type="Script" uid="uid://ccckp0856tkyx" path="res://ui/build_turret_btn.gd" id="2_276te"]
 
 [node name="Hud" type="Control" unique_id=1156096036]
 layout_mode = 3
@@ -18,8 +19,10 @@ text = "Metal: 100"
 
 [node name="BuildTurretBtn" type="Button" parent="." unique_id=259830962]
 layout_mode = 0
-offset_left = 12.0
-offset_top = 53.0
-offset_right = 262.0
-offset_bottom = 88.0
+offset_left = 89.0
+offset_top = 77.0
+offset_right = 339.0
+offset_bottom = 112.0
+scale = Vector2(2, 2)
 text = "Construir Torreta (75 Metal)"
+script = ExtResource("2_276te")
