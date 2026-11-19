@@ -37,6 +37,10 @@ func _finish_build() -> void:
 	if scene:
 		var instance := scene.instantiate()
 		instance.global_position = order.target_pos
-		get_tree().root.get_node("Main/World/Structures").add_child(instance)
+		var structures := get_tree().root.find_child("Structures", true, false)
+		if structures:
+			structures.add_child(instance)
+		else:
+			get_parent().add_child(instance)
 	order = null
 	state = State.IDLE
