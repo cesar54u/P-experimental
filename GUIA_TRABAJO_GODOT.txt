@@ -559,100 +559,231 @@ TAREA 13 (FASE 3): CREAR ESCENA ENEMY
 ================================================================================
 
 Responsable: ______________
-Tiempo estimado: 30 minutos
-NOTA: Necesita un script nuevo (units/enemy.gd). Pedir al programador que lo cree.
-
-PASOS:
-  1. Nueva Escena -> CharacterBody2D -> renombrar a "Enemy"
-  2. Adjuntar script: res://units/enemy.gd (hay que crearlo)
-
-  3. Agregar hijos:
-     a. CollisionShape2D   (CircleShape2D radio ~15)
-     b. Sprite2D           (sprite rojo)
-     c. NavigationAgent2D  [NOMBRE EXACTO]
-
-  4. GRUPO: Agregar al grupo "enemies"
-     (O que el script lo haga en _ready())
-
-  5. Guardar como: res://units/enemy.tscn
-
-  Logica que necesita el script enemy.gd:
-  - Buscar el command_center mas cercano
-  - Moverse hacia el con NavigationAgent2D
-  - Al llegar, hacer dano
-  - Tener variable HP que al llegar a 0 hace queue_free()
-
-
-================================================================================
-TAREA 14 (FASE 3): CREAR ESCENA BULLET
-================================================================================
-
-Responsable: ______________
 Tiempo estimado: 20 minutos
-NOTA: Necesita script nuevo (structures/bullet.gd). Pedir al programador.
+NOTA: El script res://units/enemy.gd YA EXISTE. No hay que programar nada.
+      El enemigo busca el CommandCenter, camina hacia el y lo ataca.
+      Al llegar a 0 HP desaparece.
 
 PASOS:
-  1. Nueva Escena -> Area2D -> renombrar a "Bullet"
-  2. Adjuntar script: res://structures/bullet.gd (hay que crearlo)
 
-  3. Agregar hijos:
-     a. CollisionShape2D   (CircleShape2D radio ~5)
-     b. Sprite2D           (punto blanco pequeno)
-     c. VisibleOnScreenNotifier2D (para destruir si sale de pantalla)
+  1. Crear la escena base:
+     - Menu superior: Escena -> Nueva Escena
+     - Clic en "Otro Nodo"
+     - Busca "CharacterBody2D" -> clic Crear
+     - Doble clic en el nombre del nodo -> escribir exactamente: Enemy
+     - Clic derecho sobre Enemy -> "Adjuntar Script"
+     - En la ventana que abre: clic en el icono de carpeta (Cargar)
+     - Navegar a: res://units/enemy.gd -> clic Abrir
 
-  4. Guardar como: res://structures/bullet.tscn
+  2. Agregar hijo CollisionShape2D:
+     - Con Enemy seleccionado, clic en el boton "+" (arriba del arbol)
+     - Busca "CollisionShape2D" -> Crear
+     - En el Inspector (derecha), busca la propiedad "Shape"
+     - Clic en el dropdown -> "Nuevo CircleShape2D"
+     - Clic sobre el circulo azul en el viewport y arrastra para radio ~16 px
 
-  Logica que necesita bullet.gd:
-  - Recibir direccion y velocidad
-  - Moverse en linea recta
-  - Al colisionar con nodo del grupo "enemies", restar HP y queue_free()
-  - Destruirse si sale de pantalla o tras N segundos
+  3. Agregar hijo Sprite2D:
+     - Con Enemy seleccionado, clic "+"
+     - Busca "Sprite2D" -> Crear
+     - En el Inspector, busca "Texture"
+     - Desde el panel Sistema de Archivos (abajo izquierda), arrastra
+       res://assets/sprites/enemy.png al campo Texture
+     - En el Inspector, busca "Scale" -> poner x=2, y=2
+       (para que se vea bien grande en pantalla)
+
+  4. Agregar hijo NavigationAgent2D [NOMBRE EXACTO - no cambiar]:
+     - Con Enemy seleccionado, clic "+"
+     - Busca "NavigationAgent2D" -> Crear
+     - NO renombres este nodo. Debe llamarse exactamente "NavigationAgent2D"
+
+  RESULTADO - Arbol debe verse asi:
+     Enemy (CharacterBody2D)
+     +-- CollisionShape2D
+     +-- Sprite2D
+     +-- NavigationAgent2D
+
+  5. VERIFICAR GRUPO (el script lo hace automaticamente):
+     - Selecciona el nodo Enemy
+     - Clic en la pestana "Nodo" (al lado del Inspector, derecha)
+     - Clic en "Grupos"
+     - Si no aparece "enemies" en la lista, escribelo y clic "Agregar"
+     NOTA: El script hace add_to_group("enemies") en _ready(), asi que
+           probablemente ya lo tenga. Solo verifica despues de ejecutar.
+
+  6. Guardar la escena:
+     - Ctrl+S
+     - Navegar a: res://units/
+     - Nombre del archivo: enemy.tscn
+     - Clic Guardar
+
+  7. AGREGAR SPAWNER DE ENEMIGOS a main.tscn:
+     a. Abre res://scenes/main.tscn
+     b. Selecciona el nodo "World" en el arbol
+     c. Clic "+" -> busca "Node2D" -> Crear
+        -> Renombrar a: EnemySpawner
+     d. Clic derecho sobre EnemySpawner -> "Adjuntar Script"
+        -> Cargar: res://scenes/enemy_spawner.gd
+     e. Con EnemySpawner seleccionado, clic "+" -> busca "Timer" -> Crear
+        (debe llamarse exactamente "Timer")
+     f. Selecciona EnemySpawner en el arbol
+        En el Inspector busca:
+        - "Enemy Scene" -> arrastra res://units/enemy.tscn
+        - "Spawn Interval" -> poner 8.0 (cada 8 segundos)
+        - "Map Size" -> x=1152, y=648 (tamano de tu pantalla)
+     g. Ctrl+S para guardar main.tscn
+
+  PRUEBA:
+  [ ] Ejecuta F5
+  [ ] Espera 8 segundos -> debe aparecer un triangulo rojo en el borde
+  [ ] El enemigo debe caminar hacia el Centro de Mando
+  [ ] Si hay torreta colocada, debe dispararle
+  [ ] Cuando el enemigo llega al Centro, el HP de este baja
+  [ ] Si el HP llega a 0, el juego se pausa (GAME OVER)
+
+  SI HAY ERROR "NavigationAgent2D could not find a NavigationMap":
+  -> Ir a main.tscn -> seleccionar NavigationRegion2D -> hacer Bake otra vez
 
 
 ================================================================================
-TAREA 15 (FASE 4): CREAR ESCENA CODE CONSOLE
+TAREA 14 (FASE 3): CREAR ESCENA BULLET (proyectil de torreta)
 ================================================================================
 
 Responsable: ______________
-Tiempo estimado: 30 minutos
-Requisito previo: Fases 1-3 funcionando
-
-   IMPORTANTE: El script busca nodos por ruta exacta:
-   $Panel/VBox/CodeEdit
-   $Panel/VBox/DeployBtn
-   $Panel/VBox/ErrorLabel
+Tiempo estimado: 15 minutos
+NOTA: El script res://structures/bullet.gd YA EXISTE. No hay que programar.
+      La bala viaja en linea recta, daña enemigos al contacto y desaparece.
+      IMPORTANTE: Debes hacer esta tarea ANTES de probar el combate,
+      porque la torreta necesita saber donde esta el archivo bullet.tscn.
 
 PASOS:
-  1. Nueva Escena -> CanvasLayer -> renombrar a "CodeConsole"
-  2. Adjuntar script: res://ui/code_console.gd
 
-  3. Agregar hijo:
-     a. PanelContainer     -> renombrar a "Panel"  [NOMBRE EXACTO]
-        - En Inspector -> Control -> Layout -> Anchors Preset: "Center"
-        - Custom Minimum Size: x=500, y=400
+  1. Crear la escena base:
+     - Menu: Escena -> Nueva Escena
+     - Clic "Otro Nodo" -> busca "Area2D" -> Crear
+     - Renombrar a: Bullet
+     - Clic derecho sobre Bullet -> "Adjuntar Script"
+     - Cargar: res://structures/bullet.gd
 
-  4. Dentro de Panel agregar:
-     b. VBoxContainer      -> renombrar a "VBox"   [NOMBRE EXACTO]
+  2. Agregar hijo CollisionShape2D:
+     - Clic "+" -> "CollisionShape2D" -> Crear
+     - Inspector -> Shape -> "Nuevo CircleShape2D"
+     - Radio: 5 px (es pequeno, es una bala)
 
-  5. Dentro de VBox agregar (en este orden):
-     c. CodeEdit           -> nombre: "CodeEdit"   [NOMBRE EXACTO]
-        - Custom Minimum Size: y=280
-        - En Inspector: habilitar "Wrap Mode" = Boundary
-        - Texto placeholder: "def on_tick():
-            t = nearest_enemy()
-            if t:
-                aim(t)
-                fire()"
+  3. Agregar hijo Sprite2D:
+     - Clic "+" -> "Sprite2D" -> Crear
+     - Inspector -> Texture -> arrastra res://assets/sprites/bullet.png
 
-     d. Button             -> nombre: "DeployBtn"  [NOMBRE EXACTO]
-        - Text: ">> Deploy <<"
-        - Custom Minimum Size: y=35
+  4. Agregar hijo VisibleOnScreenNotifier2D:
+     - Clic "+" -> busca "VisibleOnScreenNotifier2D" -> Crear
+     - Este nodo destruye la bala si sale de la pantalla (ya programado)
+     - No necesitas cambiarle nada
 
-     e. Label              -> nombre: "ErrorLabel" [NOMBRE EXACTO]
-        - Text: "Listo para programar"
-        - Custom Minimum Size: y=25
+  RESULTADO - Arbol:
+     Bullet (Area2D)
+     +-- CollisionShape2D
+     +-- Sprite2D
+     +-- VisibleOnScreenNotifier2D
 
-  RESULTADO - Arbol (las rutas deben ser exactas):
+  5. Guardar:
+     - Ctrl+S -> navegar a res://structures/
+     - Nombre: bullet.tscn -> Guardar
+
+  6. CONECTAR LA BALA A LA TORRETA (MUY IMPORTANTE):
+     a. Abre res://structures/turret.tscn
+     b. Selecciona el nodo raiz "Turret"
+     c. En el Inspector, busca la propiedad "Bullet Scene"
+     d. Desde el Sistema de Archivos, arrastra res://structures/bullet.tscn
+        al campo "Bullet Scene"
+     e. Ctrl+S para guardar turret.tscn
+
+  PRUEBA:
+  [ ] Coloca una torreta con el boton del HUD
+  [ ] Espera que aparezca un enemigo (8 segundos)
+  [ ] La torreta debe girar hacia el enemigo
+  [ ] Deben aparecer pequenos puntos blancos (balas) volando
+  [ ] Al impactar el enemigo, deben desaparecer
+  [ ] El enemigo debe destruirse al recibir suficiente dano
+
+  SI LA TORRETA NO DISPARA:
+  -> Verificar que "Bullet Scene" tiene bullet.tscn asignado en turret.tscn
+  -> La torreta solo dispara si hay enemigos en la escena (grupo "enemies")
+
+  SI LAS BALAS NO DANAN AL ENEMIGO:
+  -> Verificar que enemy.tscn tiene CollisionShape2D con forma definida
+  -> Las capas de colision: Area2D (bala) debe detectar CharacterBody2D (enemigo)
+     En Godot 4, esto funciona automaticamente en la misma capa
+
+
+================================================================================
+TAREA 15 (FASE 4): CREAR ESCENA CODE CONSOLE (consola de programacion)
+================================================================================
+
+Responsable: ______________
+Tiempo estimado: 25 minutos
+Requisito previo: Tareas 13 y 14 funcionando (enemigos y balas)
+
+DESCRIPCION: Esta es la pantalla donde el jugador escribe codigo Python-like
+para programar el comportamiento de las torretas. El jugador escribe el
+codigo, hace clic en Deploy y la torreta ejecuta ese programa cada 0.25 seg.
+
+NOTA: El script res://ui/code_console.gd YA EXISTE.
+CRITICO: Los nombres de los nodos deben ser EXACTOS o el script dara error.
+   El script busca:  $Panel/VBox/CodeEdit
+                     $Panel/VBox/DeployBtn
+                     $Panel/VBox/ErrorLabel
+
+PASOS:
+
+  1. Crear la escena base:
+     - Menu: Escena -> Nueva Escena
+     - Clic "Otro Nodo" -> busca "CanvasLayer" -> Crear
+     - Renombrar a: CodeConsole
+     - Clic derecho -> "Adjuntar Script" -> cargar: res://ui/code_console.gd
+
+  2. Agregar hijo PanelContainer:
+     - Con CodeConsole seleccionado, clic "+"
+     - Busca "PanelContainer" -> Crear
+     - Renombrar a: Panel   [NOMBRE EXACTO - debe ser "Panel"]
+     - En el Inspector, busca "Layout Mode" y pon el nodo en el centro:
+       Clic en el boton de Layout (icono de rectangulos con flechas)
+       -> selecciona "Centro" o "Full Rect" (cualquiera vale para empezar)
+     - En Inspector busca "Custom Minimum Size":
+       x = 500, y = 400
+
+  3. Agregar hijo VBoxContainer dentro de Panel:
+     - Selecciona Panel en el arbol
+     - Clic "+" -> busca "VBoxContainer" -> Crear
+     - Renombrar a: VBox   [NOMBRE EXACTO - debe ser "VBox"]
+
+  4. Agregar hijo CodeEdit dentro de VBox:
+     - Selecciona VBox en el arbol
+     - Clic "+" -> busca "CodeEdit" -> Crear
+     - Renombrar a: CodeEdit   [NOMBRE EXACTO - debe ser "CodeEdit"]
+     - En el Inspector:
+       * "Custom Minimum Size" -> y = 280
+       * Busca "Wrap Mode" -> cambiar a "Boundary"
+       * Busca "Placeholder Text" -> escribir:
+         def on_tick():
+             t = nearest_enemy()
+             if t:
+                 aim(t)
+                 fire()
+
+  5. Agregar hijo Button dentro de VBox:
+     - Selecciona VBox en el arbol
+     - Clic "+" -> busca "Button" -> Crear
+     - Renombrar a: DeployBtn   [NOMBRE EXACTO - debe ser "DeployBtn"]
+     - En el Inspector, busca "Text" -> escribir: >> Deploy <<
+     - "Custom Minimum Size" -> y = 35
+
+  6. Agregar hijo Label dentro de VBox:
+     - Selecciona VBox en el arbol
+     - Clic "+" -> busca "Label" -> Crear
+     - Renombrar a: ErrorLabel   [NOMBRE EXACTO - debe ser "ErrorLabel"]
+     - En el Inspector, busca "Text" -> escribir: Listo para programar
+     - "Custom Minimum Size" -> y = 25
+
+  RESULTADO FINAL - El arbol debe verse EXACTAMENTE asi:
      CodeConsole (CanvasLayer)
      +-- Panel (PanelContainer)
          +-- VBox (VBoxContainer)
@@ -660,10 +791,67 @@ PASOS:
              +-- DeployBtn (Button)
              +-- ErrorLabel (Label)
 
-  6. Guardar como: res://ui/code_console.tscn
-  7. Instanciar en Main/UI
-  8. Por defecto dejarlo invisible (Visible = false en el Inspector del
-     CodeConsole). Se mostrara al seleccionar una torreta.
+  7. Guardar la escena:
+     - Ctrl+S -> navegar a res://ui/
+     - Nombre: code_console.tscn -> Guardar
+
+  8. INSTANCIAR EN MAIN.TSCN:
+     a. Abre res://scenes/main.tscn
+     b. Selecciona el nodo "UI" (CanvasLayer) en el arbol
+     c. Clic en el icono de cadena/link "Instanciar Escena Hija"
+        (o Ctrl+Mayus+A)
+     d. Selecciona res://ui/code_console.tscn -> Abrir
+     e. Selecciona el nodo "CodeConsole" recien instanciado
+     f. En el Inspector, busca "Visible" -> DESACTIVAR (poner en OFF)
+        (Debe estar oculto por defecto. Se mostrara al hacer clic en torreta)
+     g. Ctrl+S para guardar main.tscn
+
+  9. CONECTAR LA CONSOLA CON LAS TORRETAS:
+     Para que al hacer clic en una torreta se abra la consola, necesitas
+     que la torreta emita una senal cuando el jugador hace clic sobre ella.
+
+     a. Abre res://structures/turret.tscn
+     b. Selecciona el nodo raiz "Turret"
+     c. Clic "+" -> agrega: Area2D -> renombrar a "ClickArea"
+     d. Dentro de ClickArea agrega: CollisionShape2D
+        - Shape: RectangleShape2D, tamano ~40x40 px
+     e. Selecciona ClickArea
+     f. Clic en la pestana "Nodo" (derecha) -> "Senales"
+     g. Busca la senal "input_event" -> doble clic
+     h. En la ventana "Conectar Senal", el receptor debe ser "Turret"
+        -> Crear funcion: _on_click_area_input_event
+     i. Godot abrira turret.gd. Agrega este codigo en la funcion creada:
+        func _on_click_area_input_event(_viewport, event, _shape_idx):
+            if event is InputEventMouseButton and event.pressed:
+                var console = get_tree().root.find_child("CodeConsole", true, false)
+                if console:
+                    console.show_for_turret(self)
+     j. Ctrl+S para guardar turret.gd y turret.tscn
+
+  PRUEBA FINAL:
+  [ ] Ejecuta F5
+  [ ] Coloca una torreta (boton del HUD)
+  [ ] Haz clic izquierdo SOBRE la torreta en el mapa
+  [ ] Debe abrirse un panel gris con un area de texto en el centro
+  [ ] Escribe en el area de texto:
+      def on_tick():
+          t = nearest_enemy()
+          if t:
+              aim(t)
+              fire()
+  [ ] Haz clic en ">> Deploy <<"
+  [ ] El label de abajo debe decir "Desplegado" en verde
+  [ ] La torreta ahora ejecutara ese codigo cada 0.25 segundos
+
+  SI LA CONSOLA NO APARECE:
+  -> Verificar que CodeConsole tiene Visible=false en main.tscn
+     (el metodo show_for_turret() lo hace visible)
+  -> Verificar que el nombre del nodo en main.tscn es exactamente "CodeConsole"
+
+  SI EL DEPLOY DA ERROR:
+  -> El interprete Python-like aun no esta implementado completamente (Fase 4)
+  -> La torreta usara comportamiento por defecto: apuntar y disparar al enemigo
+     mas cercano automaticamente (esto ya funciona sin codigo)
 
 
 ================================================================================

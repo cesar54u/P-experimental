@@ -29,6 +29,13 @@ func shoot() -> void:
 func receive_program(p: Variant) -> void:
 	program = p
 
+## Llamado cuando el jugador hace clic sobre el ClickArea de la torreta.
+func _on_click_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var console := get_tree().root.find_child("CodeConsole", true, false)
+		if console and console.has_method("show_for_turret"):
+			console.show_for_turret(self)
+
 func _physics_process(delta: float) -> void:
 	_acc += delta
 	if _acc < think_interval:
