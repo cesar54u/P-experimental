@@ -1,3 +1,21 @@
 [gd_scene format=3 uid="uid://dwnjt5pwcawlo"]
 
+[ext_resource type="Script" uid="uid://b4qr1fylogly0" path="res://structures/command_center.gd" id="1_i5b6k"]
+[ext_resource type="PackedScene" uid="uid://bkwjeugbxnouy" path="res://structures/turret.tscn" id="2_y2tq0"]
+[ext_resource type="Texture2D" uid="uid://b7c1yl5d3btqo" path="res://assets/sprites/command_center.png" id="3_hiwp8"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_6mlqo"]
+radius = 600.0
+
 [node name="CommandCenter" type="Node2D" unique_id=1914525806]
+script = ExtResource("1_i5b6k")
+turret_scene = ExtResource("2_y2tq0")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1090723410]
+scale = Vector2(2, 2)
+texture = ExtResource("3_hiwp8")
+
+[node name="UplinkArea" type="Area2D" parent="." unique_id=779588620]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="UplinkArea" unique_id=906698348]
+shape = SubResource("CircleShape2D_6mlqo")
